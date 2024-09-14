@@ -6,7 +6,16 @@ const run = async()=>{
     const phrase = config.phrase;
     const chain = config.chain;
 
-    const suiMaster = new SuiMaster({client: chain, phrase: phrase, debug: true});
+    const suiMasterParams = {
+        client: chain,
+        debug: true,
+    };
+    if (phrase.indexOf('suiprivkey') === 0) {
+        suiMasterParams.privateKey = phrase;
+    } else {
+        suiMasterParams.phrase = phrase;
+    }
+    const suiMaster = new SuiMaster(suiMasterParams);
 
     const miner = new Miner({
         suiMaster,
@@ -19,6 +28,7 @@ const run = async()=>{
     let balance = null;
 
     while (true) {
+        // await miner.printAdjustDifficultyEvents();
         await miner.mine();
         i = i + 1;
         // balance = await miner.getBTCBalance();
