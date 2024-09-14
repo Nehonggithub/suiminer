@@ -10,7 +10,7 @@ npm install
 node mine.js --chain=mainnet --phrase="secretphrase"
 ```
 
-Where secretphrase is 24/12 secret phrase for your wallet private key.
+Where secretphrase is 24 words secret phrase for your wallet private key.
 
 Be sure you have some SUI in your account for the gas.
 
