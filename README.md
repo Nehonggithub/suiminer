@@ -5,8 +5,11 @@
 - [Follow me on X](https://x.com/suidouble)
 - CLI Miner:
 
+CLI miner expects you to have node.js installed of version >= 18 [node.js](https://nodejs.org/en/download/package-manager)
+
 ```
-git clone git@github.com:suidouble/sui_meta_miner.git .
+git clone https://github.com/suidouble/sui_meta_miner.git
+cd sui_meta_miner
 npm install
 node mine.js --chain=mainnet --phrase="secretphrase"
 ```
