@@ -2,6 +2,7 @@
 
 - [Meta](https://github.com/suidouble/sui_meta) is the PoW coin on the Sui blockchain
 - [Web Miner](https://suimine.xyz/)
+- [Follow me on X](https://x.com/suidouble)
 - CLI Miner:
 
 ```
