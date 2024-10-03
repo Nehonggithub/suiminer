@@ -14,9 +14,9 @@ npm install
 node mine.js --chain=mainnet --phrase="secretphrase"
 ```
 
-Where secretphrase is 24 words secret phrase for your wallet private key or private key in the format of "suiprivkey1....."
+Where secretphrase is 24 words secret phrase for your wallet private key or private key in the format of "suiprivkey1....." ( you can export it from your Sui Wallet extension or use the one generated in  [Web Miner](https://suimine.xyz/) )
 
-Be sure you have some SUI in your account for the gas.
+Be sure you have some SUI in your wallet for the gas, 1 SUI is enough for submiting many hashes.
 
 ## License
 
