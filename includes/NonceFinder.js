@@ -10,6 +10,8 @@ export default class NonceFinder {
         this._workersCount = 8;
 
         this._askedToStop = false;
+
+        this._name = params.name;
     }
 
     pleaseStop() {
@@ -57,7 +59,7 @@ export default class NonceFinder {
             let i = 0;
             for (const worker of this._workers) {
                 const tryNonce = this.getNextNonceToTry();
-                console.log('thread #'+i+' | trying nonce: ', tryNonce);
+                // console.log('thread #'+i+' | trying nonce: ', tryNonce);
                 const promise = new Promise((res,rej)=>{
                     worker.findSalt(preparedHash, maxTarget, tryNonce)
                         .then((foundNonce)=>{
@@ -81,11 +83,11 @@ export default class NonceFinder {
             } catch (e) {
                 foundGoodHash = false;
             }
-            console.log('current rate is: '+this.hashesPerSecond()+' H/s');
+            console.log((this._name ? this._name : '') + ' | current rate is: '+this.hashesPerSecond()+' H/s');
         } while (!foundGoodHash && !this._askedToStop);
 
         if (this._askedToStop) {  // we are stoping once
-            console.log('stoping finding nonce as we were asked to stop');
+            console.log((this._name ? this._name : '') + ' | goes to the next nonces block');
             this._askedToStop = false;
         }
 

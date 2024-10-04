@@ -1,14 +1,19 @@
 import { SuiMaster } from 'suidouble';
 import config from './config.js';
 import Miner from './includes/Miner.js';
+import FomoMiner from './includes/fomo/FomoMiner.js';
 
 const run = async()=>{
     const phrase = config.phrase;
     const chain = config.chain;
 
+    if (!config.phrase || !config.chain) {
+        throw new Error('phrase and chain parameters are required');
+    }
+
     const suiMasterParams = {
         client: chain,
-        debug: true,
+        debug: !!config.debug,
     };
     if (phrase.indexOf('suiprivkey') === 0) {
         suiMasterParams.privateKey = phrase;
@@ -16,29 +21,58 @@ const run = async()=>{
         suiMasterParams.phrase = phrase;
     }
     const suiMaster = new SuiMaster(suiMasterParams);
+    await suiMaster.initialize();
 
-    const miner = new Miner({
-        suiMaster,
-        packageId: config.packageId,
-        blockStoreId: config.blockStoreId,
-        treasuryId: config.treasuryId,
-    });
+    console.log('suiMaster connected as ', suiMaster.address);
 
-    let i = 0;
-    let balance = null;
+    const miners = {};
 
-    while (true) {
-        // await miner.printAdjustDifficultyEvents();
-        await miner.mine();
-        i = i + 1;
-        // balance = await miner.getBTCBalance();
-        // console.log('BTC balance: ', balance);
+    const doMine = async(minerInstance)=>{
+        while (true) {
+            await minerInstance.mine();
+            await new Promise((res)=>setTimeout(res, 100));
+        };
+    };
 
-        // await miner.printAdjustDifficultyEvents();
-    }
+
+    if (config.do.meta) {
+        const miner = new Miner({
+            suiMaster,
+            packageId: config.packageId,
+            blockStoreId: config.blockStoreId,
+            treasuryId: config.treasuryId,
+        });
+        miners.meta = miner;
+        doMine(miners.meta);
+    };
+    if (config.do.fomo) {
+        const fomoMiner = new FomoMiner({
+            suiMaster,
+            packageId: config.fomo.packageId,
+            configId: config.fomo.configId,
+            buses: config.fomo.buses,
+        });    
+        miners.fomo = fomoMiner;
+        doMine(miners.fomo);
+    };
+
+
+
+    // // let i = 0;
+    // // let balance = null;
+
+    // while (true) {
+    //     // await miner.printAdjustDifficultyEvents();
+    //     await miner.mine();
+    //     i = i + 1;
+    //     // balance = await miner.getBTCBalance();
+    //     // console.log('BTC balance: ', balance);
+
+    //     // await miner.printAdjustDifficultyEvents();
+    // }
 };
 
 run()
     .then(()=>{
-        console.error('done');
+        console.error('running');
     });

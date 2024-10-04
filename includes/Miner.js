@@ -19,7 +19,7 @@ export default class Miner {
         this._treasury = null;
         this._movePackage = null;
 
-        this._nonceFinder = new NonceFinder();
+        this._nonceFinder = new NonceFinder({ name: 'META' });
     }
 
     async checkObjects() {
@@ -71,39 +71,6 @@ export default class Miner {
         return balance;
     }
 
-    async initGenesis() {
-        await this.checkObjects();
-
-        const tx = new suidouble.Transaction();
-        const clockId = '0x0000000000000000000000000000000000000000000000000000000000000006';
-
-        tx.moveCall({
-            target: `${this._packageId}::mining::init_genesis`,
-            arguments: [
-                tx.object(clockId),
-                tx.object(this._blockStore.id),
-            ],
-            // typeArguments: [`${testScenario._packages.admin.address}::mining::BlockInfo`],
-        });
-
-        const r = await this._suiMaster.signAndExecuteTransaction({ 
-            transaction: tx, 
-            requestType: 'WaitForLocalExecution',
-            sender: this._suiMaster.address, 
-            options: {
-                "showEffects": true, // @todo: remove?
-                "showEvents": true, // @todo: remove?
-                "showObjectChanges": true,
-                showType: true,
-                showContent: true,
-                showOwner: true,
-                showDisplay: true,
-            },
-        });
-
-        return (r?.effects?.status?.status == 'success');
-    }
-
     async mine(startNonce = 0, meta = null, payload = null) {
         await this.checkObjects();
 
@@ -126,12 +93,13 @@ export default class Miner {
         const __checkForOutdatedInterval = setInterval(()=>{
             this.hasBlockInfoChanged(blockInfo)
                 .then((changed)=>{
+                    console.log('META | block hash changed', changed);
                     if (changed) {
                         isOutdated = true;
                         this._nonceFinder.pleaseStop();
                     }
                 });
-        }, 1000);
+        }, 3000);
 
         while (!foundValid && !isOutdated) {
             // nonce = await this.findValidNonce(preparedHash, blockInfo.difficulty, nonce);
@@ -139,12 +107,12 @@ export default class Miner {
             nonce = await this._nonceFinder.findValidNonce(preparedHash, blockInfo.target);
 
             if (nonce !== null) {
-                console.log('valid nonce '+nonce+' found in '+((new Date()).getTime() - startFindingNonceAt)+'ms');
+                console.log('META | valid nonce '+nonce+' found in '+((new Date()).getTime() - startFindingNonceAt)+'ms');
                 const success = await this.submit(nonce, meta, payload);
                 if (success) {
                     foundValid = true;
                 } else {
-                    console.log('blockInfo was wrong!!!');
+                    console.log('META | blockInfo was wrong!!!');
                     nonce = nonce + 1;
                     blockInfo = await this.getBlockInfo(); // maybe we have wrong block info?
                     preparedHash = this.prepareHash(blockInfo, meta, payload);
@@ -206,13 +174,13 @@ export default class Miner {
             });
     
             if (r && r.effects && r.effects.status && r.effects.status.status && r.effects.status.status == 'success') {
-                console.log('valid nonce submited');
+                console.log('META | valid nonce submited');
                 return true;
             } else {
-                console.log('can not submit nonce');
+                console.log('META | can not submit nonce');
             }
         } catch (e) {
-            console.log('can not submit nonce');
+            console.log('META | can not submit nonce');
             console.error(e);
         }
 
@@ -282,7 +250,7 @@ export default class Miner {
 
     async hasBlockInfoChanged(blockInfo) {
         const currentBlockInfo = await this.getBlockInfo();
-        console.log('Current previous_hash: '+currentBlockInfo.previousHashAsBigInt);
+        // console.log('Current previous_hash: '+currentBlockInfo.previousHashAsBigInt);
         if (currentBlockInfo.previousHashAsBigInt != blockInfo.previousHashAsBigInt) {
             return true;
         }
